@@ -1,116 +1,98 @@
 import streamlit as st
 import google.generativeai as genai
 
-# --- 1. CONFIGURAZIONE ESTETICA E DI PAGINA ---
-st.set_page_config(page_title="SQL BLUE LOCK: MASTERCLASS", page_icon="⚽", layout="wide")
+# --- 1. CONFIGURAZIONE UI AVANZATA ---
+st.set_page_config(page_title="SQL Academy: 30 e Lode", layout="wide", initial_sidebar_state="expanded")
 
-# Custom CSS per renderla "Bella" e professionale
+# Stile CSS per rendere l'app ultra-leggibile e professionale
 st.markdown("""
     <style>
-    .main-title { font-size: 3rem; color: #1E90FF; font-weight: 800; text-transform: uppercase; margin-bottom: 0;}
-    .sub-title { font-size: 1.2rem; color: #A9A9A9; margin-bottom: 2rem;}
-    .navathe-box { background-color: #1E1E1E; padding: 15px; border-left: 5px solid #1E90FF; border-radius: 5px; margin-bottom: 20px;}
-    .stTextInput>div>div>input { border-radius: 5px; }
+    /* Tipografia e Colori */
+    body { font-family: 'Inter', sans-serif; }
+    .main-header { font-size: 2.5rem; font-weight: 900; color: #1E3A8A; margin-bottom: 0px; padding-bottom: 0px;}
+    .sub-header { font-size: 1.1rem; color: #64748B; margin-bottom: 30px;}
+    .trace-box { background-color: #F8FAFC; border-left: 5px solid #3B82F6; padding: 20px; border-radius: 8px; font-size: 1.05rem; color: #334155; line-height: 1.6;}
+    .stChatInput { border-radius: 12px; }
+    /* Nascondi elementi superflui Streamlit */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="main-title">⚽ BLUE LOCK ACADEMY</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-title">PERCORSO INTENSIVO: OBIETTIVO 30 E LODE</p>', unsafe_allow_html=True)
-
-# --- 2. CONNESSIONE AL MOTORE AI ---
+# --- 2. CONFIGURAZIONE GEMINI 2.5 FLASH ---
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # Aggiornato all'ultimo modello performante richiesto
+    model = genai.GenerativeModel('gemini-2.5-flash')
 except Exception as e:
-    st.error("⚠️ ATTENZIONE: Inserisci la tua GEMINI_API_KEY nei Secrets di Streamlit per scendere in campo!")
+    st.error("⚠️ Chiave API mancante! Aggiungi GEMINI_API_KEY in Streamlit Secrets.")
     st.stop()
 
-# --- 3. IL CERVELLO DEL MENTORE (PROMPT DI SISTEMA) ---
+# --- 3. PROMPT DI SISTEMA (IL PROFESSORE NAVATHE) ---
 SYSTEM_PROMPT = """
-SEI IL MENTORE SUPREMO DI BASI DI DATI. IL TUO SCOPO È FORGIARE UN ESPERTO DA 30 E LODE.
-REGOLE INVIOLABILI:
-1. NESSUNA SOLUZIONE PRONTA. Insegna a ragionare a "mattoni" (Quali tabelle? Quali chiavi?).
-2. SINTASSI SQL: SEMPRE E SOLO IN UPPERCASE. Usa costrutti avanzati (ALL, ANY, EXISTS), niente ORDER BY per cercare i massimi.
-3. ALGEBRA RELAZIONALE: Usa ESCLUSIVAMENTE la sintassi rigorosa ELMASRI-NAVATHE con l'operatore di assegnazione (<-). Scomponi in passaggi. Esempio: R1 <- \sigma_{cond}(Tabella).
-4. PL/SQL TRIGGER: Spiega sempre la differenza logica tra lo stato passato (tabelle) e il nuovo evento (:NEW).
-5. Tono: Esigente, motivante, tecnico.
+Sei il Mentore di Basi di Dati (metodo Elmasri-Navathe). 
+L'utente sta seguendo un piano rigoroso per prendere 30 e lode.
+REGOLE:
+1. Sii chiaro, formatta il testo con elenchi puntati e grassetti per facilitare la lettura.
+2. Niente soluzioni pronte: guida l'utente a capire quali tabelle usare.
+3. SQL: Usa UPPERCASE. Non usare MAI 'ORDER BY' o 'ROWNUM' per trovare massimi/minimi, usa '>= ALL'.
+4. Algebra: Usa la sintassi Navathe con assegnazione (<-) e LaTeX.
+5. Trigger: Spiega sempre la differenza tra i dati già presenti nel DB e il record in entrata (:NEW).
 """
 
-# --- 4. IL PERCORSO DI ADDESTRAMENTO (SIDEBAR) ---
-with st.sidebar:
-    st.header("🗺️ ROADMAP ESAME")
-    fase = st.radio(
-        "Seleziona il Modulo di Addestramento:",
-        [
-            "1️⃣ MODELLAZIONE (ER/EER)",
-            "2️⃣ ALGEBRA (NAVATHE)",
-            "3️⃣ SQL AVANZATO",
-            "4️⃣ PL/SQL TRIGGER",
-            "5️⃣ TEORIA E ASSIOMI"
-        ]
-    )
+# --- 4. INTERFACCIA ---
+st.markdown('<p class="main-header">⚽ SQL BLUE LOCK ACADEMY</p>', unsafe_allow_html=True)
+st.markdown('<p class="sub-header">Il tuo piano d\'addestramento pre-impostato per dominare l\'esame.</p>', unsafe_allow_html=True)
+
+# Layout a colonne per separare il piano di studi dalla chat
+col_plan, col_chat = st.columns([1, 2])
+
+with col_plan:
+    st.subheader("📋 Seleziona la Missione")
     
-    st.markdown("---")
-    st.subheader("📚 ARCHIVIO TRACCE PROF")
-    traccia_selezionata = st.selectbox(
-        "Carica una traccia in memoria:",
-        [
-            "Traccia 1000271189: Parcheggio MiniBrin / Rilanci Uffizi",
-            "Traccia 1000271184: Pasticceria Sweets / Prezzo Base 5000",
-            "Traccia 1000271188: Spa Chalet-v / Trigger Budget 500€",
-            "Traccia 1000271186: PC Assemblati / Utenti 2010"
-        ]
-    )
+    # Le tracce sono state hardcodate direttamente dalle tue foto
+    missioni = {
+        "Fase 1: ER - Parcheggio MiniBrin": "Gestione parcheggio multipiano. 3 piani, aree per moto/auto/furgoncino. Registrazione targa, ingresso, uscita, ticket univoco. Tariffe base a mezzo e giorno (feriale/festivo). Tenere traccia dei pagamenti e posti disponibili in tempo reale. Limite 4 ore nei festivi.",
+        "Fase 2: Algebra - Il 'TUTTI' (Es. 2010)": "Visualizzare il nome e cognome degli utenti che nel 2010 si sono aggiudicati TUTTE le aste a cui hanno partecipato.",
+        "Fase 3: SQL - Massimi senza ORDER BY": "Visualizzare senza ripetizioni le provenienze degli oggetti di antiquariato che sono andati all'asta il maggior numero di volte nel 2023. NON usare ORDER BY, ROWID e ROWNUM.",
+        "Fase 4: Trigger - Vincoli di Tempo e Budget": "Un utente può rilanciare su max 3 aste contemporaneamente in corso. Il totale dei rilanci sulle aste in corso non può superare i 500 euro."
+    }
+    
+    missione_scelta = st.radio("Seleziona la traccia su cui vuoi ragionare:", list(missioni.keys()))
+    
+    st.markdown("### 📄 Testo della Traccia")
+    st.markdown(f'<div class="trace-box">{missioni[missione_scelta]}</div>', unsafe_allow_html=True)
 
-# --- 5. CONTENUTO DINAMICO BASATO SULLA FASE ---
-st.markdown(f'<div class="navathe-box"><b>MODULO ATTIVO:</b> {fase}<br><b>BERSAGLIO:</b> {traccia_selezionata}</div>', unsafe_allow_html=True)
+with col_chat:
+    st.subheader("💬 Dialogo con il Mentore")
+    
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-if "MODELLAZIONE" in fase:
-    st.info("💡 FOCUS: Identifica le Entità forti, le Entità deboli e le cardinalità (1:N, N:N). Attenzione alle generalizzazioni totali/parziali.")
-elif "ALGEBRA" in fase:
-    st.warning("📐 REGOLA NAVATHE: Scomponi sempre. Prima Seleziona, poi Fai il Join, infine Proietta.")
-    st.latex(r"R_1 \leftarrow \sigma_{condizione}(Tabella)")
-    st.latex(r"R_2 \leftarrow R_1 \bowtie_{chiave} Tabella_2")
-    st.latex(r"Risultato \leftarrow \pi_{attributi}(R_2)")
-elif "SQL" in fase:
-    st.success("🛡️ BLINDA LA QUERY: Ricorda il divieto di usare ORDER BY, ROWID o ROWNUM. Usa HAVING COUNT(*) >= ALL (...).")
-elif "TRIGGER" in fase:
-    st.error("⚡ DIFESA ATTIVA: Usa BEFORE INSERT/UPDATE. Gestisci i NULL con NVL() e solleva sempre RAISE_APPLICATION_ERROR.")
-elif "TEORIA" in fase:
-    st.info("🧠 DOMINIO CONCETTUALE: Preparati su Dipendenze Funzionali, Assiomi di Armstrong, Tipi UNIONE e Proprietà ACID.")
+    # Mostra i messaggi precedenti
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
 
-# --- 6. MOTORE CHAT E RAGIONAMENTO ---
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+    # Input dell'utente
+    if prompt := st.chat_input("Scrivi il tuo ragionamento, la tua query, o chiedimi da dove iniziare..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-# Mostra la cronologia
-for msg in st.session_state.chat_history:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-
-# Input Utente
-user_input = st.chat_input("Incolla un pezzo della traccia, scrivi il tuo codice o chiedi come iniziare...")
-
-if user_input:
-    # Aggiungi e mostra messaggio utente
-    st.session_state.chat_history.append({"role": "user", "content": user_input})
-    with st.chat_message("user"):
-        st.markdown(user_input)
-
-    # Elaborazione AI
-    with st.chat_message("assistant"):
-        with st.spinner("Calcolo densità tecnica in corso..."):
-            prompt_completo = f"""
-            {SYSTEM_PROMPT}
-            MODULO ATTIVO: {fase}
-            TRACCIA DI RIFERIMENTO: {traccia_selezionata}
-            INPUT STUDENTE: {user_input}
-            """
-            response = model.generate_content(prompt_completo)
-            st.markdown(response.text)
-            st.session_state.chat_history.append({"role": "assistant", "content": response.text})
-
-# Pulsante per pulire la lavagna
-if st.sidebar.button("🧹 Pulisci Lavagna (Reset)"):
-    st.session_state.chat_history = []
-    st.rerun()
+        with st.chat_message("assistant"):
+            with st.spinner("Analisi Navathe in corso..."):
+                # Costruiamo il contesto completo da mandare a Gemini
+                context = f"{SYSTEM_PROMPT}\n\nMISSIONE ATTUALE:\n{missione_scelta}\nTESTO: {missioni[missione_scelta]}\n\nSTUDENTE: {prompt}"
+                try:
+                    response = model.generate_content(context)
+                    st.markdown(response.text)
+                    st.session_state.messages.append({"role": "assistant", "content": response.text})
+                except Exception as e:
+                    # Fallback nel caso gemini-2.5-flash non sia ancora distribuito in tutte le region
+                    st.warning("Esecuzione fallita con Gemini 2.5 Flash. Tentativo di recupero con Gemini 1.5 Pro...")
+                    model_fallback = genai.GenerativeModel('gemini-1.5-pro')
+                    response = model_fallback.generate_content(context)
+                    st.markdown(response.text)
+                    st.session_state.messages.append({"role": "assistant", "content": response.text})
+                    
