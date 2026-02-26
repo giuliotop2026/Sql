@@ -5,123 +5,118 @@ from PIL import Image
 import io
 import streamlit.components.v1 as components
 
-# --- 1. GRAFICA GOLDEN EYE (MASSIMO CONTRASTO) ---
+# --- 1. GRAFICA 'SALOON EL GRANITO' (MASSIMO CONTRASTO) ---
 st.markdown("""
     <style>
     .stApp { 
-        background-color: #05140b; 
-        background-image: radial-gradient(circle, #0e2a1d 0%, #05140b 100%);
-        color: #ffffff; 
+        background-color: #2b1d0e; 
+        background-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png");
+        color: #d4c4a9; 
         font-family: 'Courier New', Courier, monospace; 
     }
     h1, h2, h3 { 
-        color: #ffd700 !important; 
+        color: #ffcc00 !important; 
         text-transform: uppercase; 
         font-weight: 900; 
-        text-shadow: 3px 3px 6px #000;
-        border-bottom: 2px solid #ffd700;
+        text-shadow: 2px 2px 4px #000;
+        border-bottom: 3px solid #8b4513;
     }
-    .stAlert p {
-        color: #ffffff !important;
-        font-size: 1.3rem !important;
-        line-height: 1.6 !important;
+    .stAlert p { 
+        color: #ffffff !important; 
+        font-size: 1.6rem !important; 
+        font-weight: bold; 
         text-shadow: 1px 1px 2px #000;
     }
     .stButton>button { 
-        background-color: #8b0000 !important; 
-        color: #ffffff !important; 
-        border: 2px solid #ffd700 !important; 
-        font-weight: bold; font-size: 1.5em; text-transform: uppercase;
-        border-radius: 8px; height: 3.5em;
-        box-shadow: 0px 5px 15px rgba(0,0,0,0.7);
+        background-color: #8b4513 !important; 
+        color: #ffcc00 !important; 
+        border: 3px solid #ffcc00 !important; 
+        font-weight: bold; font-size: 1.6em; text-transform: uppercase;
+        width: 100%; border-radius: 12px; height: 4em;
+        box-shadow: 0px 5px 15px rgba(0,0,0,0.6);
     }
-    .stButton>button:hover { background-color: #ffd700 !important; color: #000 !important; }
+    .stButton>button:hover { background-color: #ffcc00 !important; color: #2b1d0e !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. RADAR ACUSTICO (GONG DELLA VITTORIA) ---
+# --- 2. RADAR ACUSTICO (IL GONG DEL DUELLO) ---
 def play_victory_sound():
     audio_url = "https://www.myinstants.com/media/sounds/boxing-bell.mp3"
-    sound_html = f'<audio autoplay><source src="{audio_url}" type="audio/mpeg"></audio>'
-    components.html(sound_html, height=0, width=0)
+    components.html(f'<audio autoplay><source src="{audio_url}" type="audio/mpeg"></audio>', height=0, width=0)
 
 # --- 3. CONNESSIONE AL CERVELLO CLAUDE ---
 try:
     client_claude = anthropic.Anthropic(api_key=st.secrets["CLAUDE_API_KEY"])
 except KeyError:
-    st.error("☠️ MUNIZIONE CLAUDE MANCANTE!")
+    st.error("☠️ EHI PARTNER! MANCANO LE MUNIZIONI NEL FILE SECRETS (CLAUDE_API_KEY)!")
     st.stop()
 
-st.title("🏇 SNIPER 42.0: THE CLAUDE SHIELD")
-st.markdown("### *'Logica Sonnet 3.5. Granito 3.0 Attivo. Zero Errori.'*")
+st.title("🌵 SALOON 'EL GRANITO' 🌵")
+st.markdown("### *'Legge dello Sceriffo 3.0. Niente chiacchiere, solo piombo.'*")
 
-# --- 4. FUNZIONE CODIFICA IMMAGINE ---
+# --- 4. FUNZIONE CODIFICA ---
 def encode_image(image_file):
     return base64.b64encode(image_file.getvalue()).decode("utf-8")
 
-# --- 5. INTERFACCIA DI CACCIA ---
-nazione = st.selectbox("🌍 TERRITORIO DI CACCIA:", [
-    "UK", "IRLANDA", "USA", "ITALIA", "FRANCIA", "SUD AFRICA", "AUSTRALIA"
-])
+# --- 5. BACHECA DEI RICERCATI ---
+nazione = st.selectbox("🗺️ TERRITORIO DI CACCIA:", ["UK", "IRLANDA", "USA", "ITALIA", "FRANCIA", "SUD AFRICA", "AUSTRALIA"])
+uploaded_files = st.file_uploader("📜 AFFIGGI I MANIFESTI (SCREENSHOT STATISTICHE):", type=["jpg", "png", "jpeg"], accept_multiple_files=True)
 
-uploaded_files = st.file_uploader("📸 CARICA GLI SCREENSHOT DEL CAVEAU:", type=["jpg", "png", "jpeg"], accept_multiple_files=True)
+if uploaded_files:
+    st.markdown("### 🧐 SOSPETTATI IN BACHECA:")
+    cols = st.columns(len(uploaded_files))
+    for i, file in enumerate(uploaded_files):
+        with cols[i]:
+            st.image(file, caption=f"Manifesto #{i+1}", use_column_width=True)
 
-if st.button("🏁 ESEGUI PROTOCOLO GRANITO 3.0"):
+# --- 6. IL GRILLETTO (PROTOCOLLO BLUE LOCK) ---
+if st.button("🤠 SCATENA IL PISTOLERO (ANALIZZA)"):
     if not uploaded_files:
-        st.warning("CARICA I POSTER, COMANDANTE!")
+        st.warning("EHI STRANIERO, CARICA I MANIFESTI PRIMA DI SPARARE!")
     else:
-        with st.spinner("CLAUDE STA ANALIZZANDO L'ABISSO... ⏳"):
+        with st.spinner("CLAUDE STA PRENDENDO LA MIRA... ⏳"):
             try:
-                # Codifica del primo file per la visione di Claude
-                base64_img = encode_image(uploaded_files[0])
-                media_type = f"image/{uploaded_files[0].type.split('/')[-1]}"
-
-                # IL PROMPT DEFINITIVO (LOGICA BLINDATA) [cite: 2026-02-25]
+                # Carichiamo tutti i manifesti nel caricatore di Claude
+                content_list = []
+                for file in uploaded_files:
+                    b64_img = encode_image(file)
+                    m_type = f"image/{file.type.split('/')[-1]}"
+                    content_list.append({"type": "image", "source": {"type": "base64", "media_type": m_type, "data": b64_img}})
+                
+                # ISTRUZIONI SPIETATE [cite: 2026-02-25]
                 prompt_claude = f"""
-                SISTEMA: PROTOCOLO GRANITO 3.0 - ANALISI MOLECOLARE.
-                RUOLO: ANALISTA IPPICO SENIOR (BLUE LOCK PHILOSOPHY). [cite: 2026-01-19]
-                SINTASSI: RIGOROSAMENTE IN MAIUSCOLO. [cite: 2026-01-20]
+                SEI IL PISTOLERO DEL 'PROGETTO BLUE LOCK'. SINTASSI: RIGOROSAMENTE IN MAIUSCOLO. [cite: 2026-01-20]
                 NAZIONE: {nazione}
 
-                FASE 1: SCANSIONE CINETICA
-                Identifica ogni particella (#) e i relativi dati: RT (REC), GG, SEQ (ULTIMI ARRIVI).
-                REGOLE SEQ: IL PRIMO NUMERO A SINISTRA È IL RISULTATO PIÙ RECENTE. [cite: 2026-02-20]
+                REGOLE DEL GRANITO (FILTRI INVIOLABILI):
+                1. MURO FORMA: SEQ deve iniziare con 1 o 2. [cite: 2026-02-25]
+                2. FILTRO RUGGINE: GG < 45. [cite: 2026-02-25]
+                3. SE MAIDEN: Accetta solo SEQ 1 e GG < 15. [cite: 2026-02-25]
+                4. DENSITÀ TECNICA: Identifica i 'Polmoni d'Acciaio' (RT/REC). [cite: 2026-02-18, 2026-02-20]
 
-                FASE 2: FILTRI INVIOLABILI (PROCESSO DI ELIMINAZIONE) [cite: 2026-02-25]
-                1. MURO FORMA: SCARTA CHI NON HA 1 O 2 COME PRIMO NUMERO A SINISTRA.
-                2. FILTRO RUGGINE: GG DEVE ESSERE < 45. SE MANCANTE O > 45, ELIMINA.
-                3. SE MAIDEN: ACCETTA SOLO SEQ '1', GG < 15 E GAP RT >= 5 RISPETTO AL SECONDO.
-
-                FASE 3: DENSITÀ TECNICA (POLMONI D'ACCIAIO) [cite: 2026-02-18]
-                IGNORA LE QUOTE. IDENTIFICA IL SECONDO MIGLIORE PER DENSITÀ TECNICA CHE SCHIACCIA IL FAVORITO DI CARTA. [cite: 2026-02-20]
-
-                REFERTO FINALE:
-                '🏆 SACRO GRAAL INDIVIDUATO: PARTICELLA [NUMERO #]' (O 'NESSUN SACRO GRAAL')
-                'PIANO DI CORSA: [ANALISI DETTAGLIATA DELLA SUPERIORITÀ TECNICA].'
-                'BULLONE SERRATO: [CONFERMA REQUISITI SUPERATI].'
+                ORDINE DELLO SCERIFFO:
+                NON FARE DISCORSI. NON SPIEGARE I FILTRI. DAI SOLO IL NOME E IL NUMERO.
+                
+                SE TROVI IL SACRO GRAAL:
+                '💰 TAGLIA RISCOSSA: PISTOLERO [NUMERO #] - [NOME]'
+                'BULLONE SERRATO: [Motivazione di una riga].'
+                
+                SE NON C'È NULLA:
+                '🌵 NESSUNA PEPITA D'ORO IN QUESTO FIUME.'
                 """
+                content_list.append({"type": "text", "text": prompt_claude})
 
-                # Chiamata API Anthropic
                 response = client_claude.messages.create(
                     model="claude-3-5-sonnet-20241022",
-                    max_tokens=1024,
-                    messages=[{
-                        "role": "user",
-                        "content": [
-                            {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": base64_img}},
-                            {"type": "text", "text": prompt_claude}
-                        ]
-                    }]
+                    max_tokens=500,
+                    messages=[{"role": "user", "content": content_list}]
                 )
                 
                 sentenza = response.content[0].text
                 st.info(sentenza)
                 
-                # REAZIONE ALLA GLORIA
-                if "SACRO GRAAL" in sentenza.upper() and "NESSUN" not in sentenza.upper():
-                    play_victory_sound()
-                    st.balloons()
-                    st.success("✅ OBIETTIVO IDENTIFICATO. PROCEDERE AL MERCATO.")
-                    
+                if "TAGLIA" in sentenza.upper() and "NESSUNA" not in sentenza.upper():
+                    play_victory_sound(); st.balloons()
             except Exception as e:
-                st.error(f"☠️ ERRORE DI INFILTRAZIONE: {e}")
+                st.error(f"☠️ SERPENTE NELLO STIVALE (ERRORE): {e}")
+                
