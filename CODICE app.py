@@ -1,79 +1,127 @@
 import streamlit as st
-import google.generativeai as genai
+import anthropic
+import base64
+from PIL import Image
+import io
+import streamlit.components.v1 as components
 
-# --- CONFIGURAZIONE UI ANTI-BLOCCO ---
-st.set_page_config(page_title="GRANITO 3.0", layout="centered")
-
+# --- 1. GRAFICA GOLDEN EYE (MASSIMO CONTRASTO) ---
 st.markdown("""
     <style>
-    .main-title { font-size: 1.8rem; font-weight: 900; color: #1E3A8A; text-align: center; margin-bottom: 5px; }
-    .sub-title { font-size: 1rem; color: #64748B; text-align: center; margin-bottom: 20px; }
-    .phase-card { background-color: #F8FAFC; border-radius: 12px; padding: 15px; border-left: 6px solid #3B82F6; margin-bottom: 20px; font-size: 0.95rem; color: #1E293B; line-height: 1.5; }
+    .stApp { 
+        background-color: #05140b; 
+        background-image: radial-gradient(circle, #0e2a1d 0%, #05140b 100%);
+        color: #ffffff; 
+        font-family: 'Courier New', Courier, monospace; 
+    }
+    h1, h2, h3 { 
+        color: #ffd700 !important; 
+        text-transform: uppercase; 
+        font-weight: 900; 
+        text-shadow: 3px 3px 6px #000;
+        border-bottom: 2px solid #ffd700;
+    }
+    .stAlert p {
+        color: #ffffff !important;
+        font-size: 1.3rem !important;
+        line-height: 1.6 !important;
+        text-shadow: 1px 1px 2px #000;
+    }
+    .stButton>button { 
+        background-color: #8b0000 !important; 
+        color: #ffffff !important; 
+        border: 2px solid #ffd700 !important; 
+        font-weight: bold; font-size: 1.5em; text-transform: uppercase;
+        border-radius: 8px; height: 3.5em;
+        box-shadow: 0px 5px 15px rgba(0,0,0,0.7);
+    }
+    .stButton>button:hover { background-color: #ffd700 !important; color: #000 !important; }
     </style>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# --- CONNESSIONE AI ---
+# --- 2. RADAR ACUSTICO (GONG DELLA VITTORIA) ---
+def play_victory_sound():
+    audio_url = "https://www.myinstants.com/media/sounds/boxing-bell.mp3"
+    sound_html = f'<audio autoplay><source src="{audio_url}" type="audio/mpeg"></audio>'
+    components.html(sound_html, height=0, width=0)
+
+# --- 3. CONNESSIONE AL CERVELLO CLAUDE ---
 try:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    # Impostato esattamente sul modello richiesto
-    model = genai.GenerativeModel('gemini-2.5-flash')
-except Exception:
-    st.error("ERRORE: Inserisci la tua API KEY nei Secrets di Streamlit.")
+    client_claude = anthropic.Anthropic(api_key=st.secrets["CLAUDE_API_KEY"])
+except KeyError:
+    st.error("☠️ MUNIZIONE CLAUDE MANCANTE!")
     st.stop()
 
-# --- PROMPT DI SISTEMA ---
-SYSTEM_PROMPT = """
-Sei il Mentore Blue Lock per l'esame del Prof. Maratea.
-1. Non dare la soluzione completa, ma guida l'utente a ragionare sulle entità e sulle chiavi.
-2. SQL: Scrivi SEMPRE in UPPERCASE. NON usare ORDER BY per i massimi/minimi, usa HAVING COUNT >= ALL o EXISTS.
-3. Algebra: Usa la sintassi Navathe con l'assegnazione (<-) e spiega le doppie negazioni.
-4. Usa formattazione chiara e liste puntate.
-"""
+st.title("🏇 SNIPER 42.0: THE CLAUDE SHIELD")
+st.markdown("### *'Logica Sonnet 3.5. Granito 3.0 Attivo. Zero Errori.'*")
 
-st.markdown('<p class="main-title">⚽ GRANITO 3.0</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-title">Addestramento 2.5 Flash - Streaming Attivo</p>', unsafe_allow_html=True)
+# --- 4. FUNZIONE CODIFICA IMMAGINE ---
+def encode_image(image_file):
+    return base64.b64encode(image_file.getvalue()).decode("utf-8")
 
-# --- IL PERCORSO (Estratto dalle tue foto) ---
-missioni = {
-    "1. EER: Parcheggio MiniBrin": "MODELLAZIONE: Gestione parcheggio 3 piani, aree separate moto/auto/furgone. Tariffe feriali/festive, ticket univoco. Calcolare posti disponibili in tempo reale per bloccare ingressi.",
-    "2. EER: Pasticceria Sweets": "MODELLAZIONE: Dolci preconfezionati a pezzo vs sfusi a peso. Calcolare quanti dolci venduti e ordinare materie prime (zucchero, farina) ai fornitori.",
-    "3. ALGEBRA: Il 'SOLO' (Broker)": "ALGEBRA NAVATHE: Visualizzare nome e cognome di chi ha fatto SOLO offerte su 'sculture'. (Richiede doppia differenza).",
-    "4. SQL: Massimi (No Order By)": "SQL: Provenienze antiquariato andate all'asta il maggior numero di volte nel 2023. Divieto assoluto di usare ORDER BY.",
-    "5. TRIGGER: Budget 500€": "PL/SQL: Un utente può rilanciare su max 3 aste contemporaneamente e il totale dei rilanci non può superare i 500 euro.",
-    "6. TEORIA: Assiomi": "TEORIA: Spiegare l'Integrità Referenziale e le sue conseguenze sul popolamento. Enunciare gli Assiomi di Armstrong."
-}
+# --- 5. INTERFACCIA DI CACCIA ---
+nazione = st.selectbox("🌍 TERRITORIO DI CACCIA:", [
+    "UK", "IRLANDA", "USA", "ITALIA", "FRANCIA", "SUD AFRICA", "AUSTRALIA"
+])
 
-scelta = st.selectbox("Seleziona il Bersaglio:", list(missioni.keys()))
+uploaded_files = st.file_uploader("📸 CARICA GLI SCREENSHOT DEL CAVEAU:", type=["jpg", "png", "jpeg"], accept_multiple_files=True)
 
-st.markdown(f'<div class="phase-card"><b>TRACCIA:</b><br>{missioni[scelta]}</div>', unsafe_allow_html=True)
+if st.button("🏁 ESEGUI PROTOCOLO GRANITO 3.0"):
+    if not uploaded_files:
+        st.warning("CARICA I POSTER, COMANDANTE!")
+    else:
+        with st.spinner("CLAUDE STA ANALIZZANDO L'ABISSO... ⏳"):
+            try:
+                # Codifica del primo file per la visione di Claude
+                base64_img = encode_image(uploaded_files[0])
+                media_type = f"image/{uploaded_files[0].type.split('/')[-1]}"
 
-# --- MOTORE CHAT CON STREAMING ---
-if "messages" not in st.session_state: 
-    st.session_state.messages = []
+                # IL PROMPT DEFINITIVO (LOGICA BLINDATA) [cite: 2026-02-25]
+                prompt_claude = f"""
+                SISTEMA: PROTOCOLO GRANITO 3.0 - ANALISI MOLECOLARE.
+                RUOLO: ANALISTA IPPICO SENIOR (BLUE LOCK PHILOSOPHY). [cite: 2026-01-19]
+                SINTASSI: RIGOROSAMENTE IN MAIUSCOLO. [cite: 2026-01-20]
+                NAZIONE: {nazione}
 
-# Mostra lo storico
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]): 
-        st.markdown(msg["content"])
+                FASE 1: SCANSIONE CINETICA
+                Identifica ogni particella (#) e i relativi dati: RT (REC), GG, SEQ (ULTIMI ARRIVI).
+                REGOLE SEQ: IL PRIMO NUMERO A SINISTRA È IL RISULTATO PIÙ RECENTE. [cite: 2026-02-20]
 
-# Input utente
-if prompt := st.chat_input("Scrivi qui il tuo ragionamento..."):
-    # 1. Salva e mostra il messaggio dell'utente
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"): 
-        st.markdown(prompt)
+                FASE 2: FILTRI INVIOLABILI (PROCESSO DI ELIMINAZIONE) [cite: 2026-02-25]
+                1. MURO FORMA: SCARTA CHI NON HA 1 O 2 COME PRIMO NUMERO A SINISTRA.
+                2. FILTRO RUGGINE: GG DEVE ESSERE < 45. SE MANCANTE O > 45, ELIMINA.
+                3. SE MAIDEN: ACCETTA SOLO SEQ '1', GG < 15 E GAP RT >= 5 RISPETTO AL SECONDO.
 
-    # 2. Mostra la risposta dell'AI in streaming
-    with st.chat_message("assistant"):
-        full_prompt = f"{SYSTEM_PROMPT}\nSTIAMO LAVORANDO SU: {scelta}\nTESTO TRACCIA: {missioni[scelta]}\nUTENTE: {prompt}"
-        
-        try:
-            # Qui avviene la magia: stream=True impedisce il blocco del telefono
-            response_stream = model.generate_content(full_prompt, stream=True)
-            testo_completo = st.write_stream(response_stream)
-            
-            # Salva la risposta completa nello storico
-            st.session_state.messages.append({"role": "assistant", "content": testo_completo})
-            
-        except Exception as e:
-            st.error("Errore di connessione o Quota Esaurita. Riprova tra un istante.")
+                FASE 3: DENSITÀ TECNICA (POLMONI D'ACCIAIO) [cite: 2026-02-18]
+                IGNORA LE QUOTE. IDENTIFICA IL SECONDO MIGLIORE PER DENSITÀ TECNICA CHE SCHIACCIA IL FAVORITO DI CARTA. [cite: 2026-02-20]
+
+                REFERTO FINALE:
+                '🏆 SACRO GRAAL INDIVIDUATO: PARTICELLA [NUMERO #]' (O 'NESSUN SACRO GRAAL')
+                'PIANO DI CORSA: [ANALISI DETTAGLIATA DELLA SUPERIORITÀ TECNICA].'
+                'BULLONE SERRATO: [CONFERMA REQUISITI SUPERATI].'
+                """
+
+                # Chiamata API Anthropic
+                response = client_claude.messages.create(
+                    model="claude-3-5-sonnet-20241022",
+                    max_tokens=1024,
+                    messages=[{
+                        "role": "user",
+                        "content": [
+                            {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": base64_img}},
+                            {"type": "text", "text": prompt_claude}
+                        ]
+                    }]
+                )
+                
+                sentenza = response.content[0].text
+                st.info(sentenza)
+                
+                # REAZIONE ALLA GLORIA
+                if "SACRO GRAAL" in sentenza.upper() and "NESSUN" not in sentenza.upper():
+                    play_victory_sound()
+                    st.balloons()
+                    st.success("✅ OBIETTIVO IDENTIFICATO. PROCEDERE AL MERCATO.")
+                    
+            except Exception as e:
+                st.error(f"☠️ ERRORE DI INFILTRAZIONE: {e}")
